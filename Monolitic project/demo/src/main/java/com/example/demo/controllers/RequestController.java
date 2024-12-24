@@ -54,4 +54,9 @@ public class RequestController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @GetMapping("/{userId}/request")
+    public RequestEntity getRequest(@PathVariable Long userId) {
+        return requestService.getRequest(userId);
+    }*
 }

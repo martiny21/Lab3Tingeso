@@ -37,10 +37,13 @@ public class RequestEntity {
     private short loanType;
     private float interestRate;
     private LocalDate date;     //When the loan was made
+
     private short limitYears;
+    private float annualInterestRate;
     private int amount;         //loan amount
-    private int insurance;
-    private int fireInsurance;
+    private double insurance;      //insurance monthly payment
+    private int fireInsurance;  //fire insurance monthly payment
+    private double administrativeFee; //administrative fee
     private double loanAmount; //Final amount
 
     //Foreign Key

@@ -50,7 +50,7 @@ public class RequestService {
      */
     public RequestEntity evaluateRequest(Long userId) {
         // Retrieve the request by the user ID from the requestRepository
-        Optional<RequestEntity> requestOpt = Optional.ofNullable(requestRepository.findByUserId(userId));
+        Optional<RequestEntity> requestOpt = Optional.ofNullable(requestRepository.nativeQueryFindByUserId(userId));
         Optional<UserEntity> userOpt = userRepository.findById(userId);
 
         if(requestOpt.isPresent() && userOpt.isPresent()) {
@@ -61,6 +61,7 @@ public class RequestService {
             // Set the status of the request to 3 if the result is false
             if (result) {
                 request.setStatus((short) 4);
+                CostsLoan(userId);
             }
             return requestRepository.save(request);
 
@@ -128,6 +129,8 @@ public class RequestService {
             request.setSavingCapacityStatus("Moderada");
             return false;
 
+        } else {
+            request.setSavingCapacityStatus("Solida");
         }
         return true;
     }
@@ -173,7 +176,11 @@ public class RequestService {
         Optional<RequestEntity> requestOpt = requestRepository.findById(requestId);
         if(requestOpt.isPresent()) {
             RequestEntity request = requestOpt.get();
+            if (status == 4) {
+                CostsLoan(request.getUser_id());
+            }
             request.setStatus(status);
+
             return requestRepository.save(request);
         } else {
             throw new RuntimeException("Request not found");
@@ -202,5 +209,56 @@ public class RequestService {
      */
     public List<RequestEntity> getAllRequests() {
         return requestRepository.findAll();
+    }
+
+    /**
+     * Calculate the costs of the loan.
+     * @param userId the user ID
+     * @return the request entity
+     */
+    public RequestEntity CostsLoan(Long userId) {
+        Optional<RequestEntity> requestOpt = Optional.ofNullable(requestRepository.nativeQueryFindByUserId(userId));
+        Optional<UserEntity> userOpt = userRepository.findById(userId);
+        if (requestOpt.isPresent() && userOpt.isPresent()) {
+            RequestEntity request = requestOpt.get();
+            UserEntity user = userOpt.get();
+
+            //Calculate the monthly payment
+            int AmountRequest = request.getAmount();
+            float mensualInterestRate = (request.getInterestRate() / 100) / 12.0f / 100.0f;
+            int totalPayments = request.getLimitYears() * 12;
+            double monthlyPayment = AmountRequest * (mensualInterestRate * Math.pow(1 + mensualInterestRate,
+                    totalPayments)) / (Math.pow(1 + mensualInterestRate, totalPayments) - 1);
+            //set fire insurance
+            int fire_insurance = 20000; //20,000 monthly
+
+            //Calculate insurance
+            double insurance = AmountRequest * 0.0003;
+
+            //Calculate administrative fee
+            double administrativeFee = AmountRequest * 0.01;
+
+            double monthlyCost = monthlyPayment + insurance + fire_insurance;
+
+            double totalCost = monthlyCost * totalPayments + administrativeFee;
+
+            request.setInsurance(insurance);
+            request.setAdministrativeFee(administrativeFee);
+            request.setFireInsurance(fire_insurance);
+            request.setLoanAmount(totalCost);
+            //update the request
+            return requestRepository.save(request);
+        } else {
+            throw new RuntimeException("Request not found");
+        }
+    }
+
+    /**
+     * Get the request by the user ID.
+     * @param userId the user ID
+     * @return the request entity
+     */
+    public RequestEntity getRequest(Long userId) {
+        return requestRepository.nativeQueryFindByUserId(userId);
     }
 }

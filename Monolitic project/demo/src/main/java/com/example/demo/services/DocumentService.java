@@ -39,6 +39,6 @@ public class DocumentService {
     }
 
     public List<DocumentEntity> getDocumentsByUserId(Long userId) {
-        return documentRepository.findByUserId(userId);
+        return documentRepository.nativeQueryFindByUserId(userId);
     }
 }
