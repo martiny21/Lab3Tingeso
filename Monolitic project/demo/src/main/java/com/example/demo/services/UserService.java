@@ -26,4 +26,10 @@ public class UserService {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         return user.getRut();
     }
+
+    public UserEntity updateUser(Long userId) {
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setReady(true);
+        return userRepository.save(user);
+    }
 }

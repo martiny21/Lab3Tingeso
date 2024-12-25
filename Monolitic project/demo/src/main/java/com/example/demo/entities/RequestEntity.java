@@ -28,7 +28,7 @@ public class RequestEntity {
     private boolean consistentSavingHistory;
     private boolean periodicDeposit;
     private boolean salaryYearRelation;
-    private boolean nearlyRetirements;
+    private boolean nearlyRetirements;      //if the user not has retired important amoount of money
 
     private String SavingCapacityStatus;
     //Loan related

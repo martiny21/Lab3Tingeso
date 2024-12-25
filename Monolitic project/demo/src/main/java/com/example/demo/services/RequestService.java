@@ -58,10 +58,10 @@ public class RequestService {
             UserEntity user = userOpt.get();
             boolean result = evaluateCRequest(request, user);
 
-            // Set the status of the request to 3 if the result is false
+            // If the request is pre-approved, calculate the costs of the loan
             if (result) {
                 request.setStatus((short) 4);
-                CostsLoan(userId);
+                return CostsLoan(userId);
             }
             return requestRepository.save(request);
 
@@ -177,7 +177,7 @@ public class RequestService {
         if(requestOpt.isPresent()) {
             RequestEntity request = requestOpt.get();
             if (status == 4) {
-                CostsLoan(request.getUser_id());
+                return CostsLoan(request.getUser_id());
             }
             request.setStatus(status);
 
@@ -236,16 +236,15 @@ public class RequestService {
             double insurance = AmountRequest * 0.0003;
 
             //Calculate administrative fee
-            double administrativeFee = AmountRequest * 0.01;
+            double administrativeFee = (double) AmountRequest * 0.01;
 
-            double monthlyCost = monthlyPayment + insurance + fire_insurance;
+            double monthlyCost = monthlyPayment + insurance + (double) fire_insurance;
 
             double totalCost = monthlyCost * totalPayments + administrativeFee;
-
             request.setInsurance(insurance);
             request.setAdministrativeFee(administrativeFee);
             request.setFireInsurance(fire_insurance);
-            request.setLoanAmount(totalCost);
+            request.setLoanAmount(Math.floor(totalCost));
             //update the request
             return requestRepository.save(request);
         } else {
@@ -261,4 +260,20 @@ public class RequestService {
     public RequestEntity getRequest(Long userId) {
         return requestRepository.nativeQueryFindByUserId(userId);
     }
+
+    public RequestEntity updateSavingCapacity(Long userId, boolean minimumSalary, boolean consistentSavingHistory, boolean periodicDeposit, boolean salaryYearRelation, boolean nearlyRetirements) {
+        Optional<RequestEntity> requestOpt = Optional.ofNullable(requestRepository.nativeQueryFindByUserId(userId));
+        if (requestOpt.isPresent()) {
+            RequestEntity request = requestOpt.get();
+            request.setMinimumSalary(minimumSalary);
+            request.setConsistentSavingHistory(consistentSavingHistory);
+            request.setPeriodicDeposit(periodicDeposit);
+            request.setSalaryYearRelation(salaryYearRelation);
+            request.setNearlyRetirements(nearlyRetirements);
+            return requestRepository.save(request);
+        } else {
+            throw new RuntimeException("Request not found");
+        }
+    }
+
 }

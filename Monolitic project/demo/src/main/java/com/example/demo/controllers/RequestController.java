@@ -58,5 +58,21 @@ public class RequestController {
     @GetMapping("/{userId}/request")
     public RequestEntity getRequest(@PathVariable Long userId) {
         return requestService.getRequest(userId);
-    }*
+    }
+
+    @PutMapping("/{userId}/updateSavingCapacity")
+    public ResponseEntity<RequestEntity> updateSavingCapacity(@PathVariable Long userId,
+                                                              @RequestParam boolean minimumSalary,
+                                                              @RequestParam boolean consistentSavingHistory,
+                                                              @RequestParam boolean periodicDeposit,
+                                                              @RequestParam boolean salaryYearRelation,
+                                                              @RequestParam boolean nearlyRetirements) {
+        try {
+            RequestEntity request = requestService.updateSavingCapacity(userId, minimumSalary,
+                    consistentSavingHistory, periodicDeposit, salaryYearRelation, nearlyRetirements);
+            return ResponseEntity.ok(request);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
