@@ -3,10 +3,12 @@ package com.example.demo.controllers;
 import com.example.demo.entities.DocumentEntity;
 import com.example.demo.services.DocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -29,9 +31,21 @@ public class DocumentController {
         }
     }
 
-    @GetMapping("/user/{userId}")
+    /*@GetMapping("/user/{userId}")
     public ResponseEntity<List<DocumentEntity>> getDocumentsByUserId(@PathVariable Long userId) {
         List<DocumentEntity> documents = documentService.getDocumentsByUserId(userId);
         return ResponseEntity.ok(documents);
+    }
+    */
+
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ArrayList<DocumentEntity>> GetDocuments(@PathVariable long userId) {
+        ArrayList<DocumentEntity> documents = documentService.getDocumentsByUserId(userId);
+        if (documents == null || documents.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(documents);
+
     }
 }

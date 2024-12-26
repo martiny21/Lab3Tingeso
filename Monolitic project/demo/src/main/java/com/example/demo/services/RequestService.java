@@ -168,12 +168,12 @@ public class RequestService {
 
     /**
      * Update the status of the request.
-     * @param requestId the request ID
+     * @param userId the user ID
      * @param status the status of the request
      * @return the request entity
      */
-    public RequestEntity updateRequest(Long requestId, short status) {
-        Optional<RequestEntity> requestOpt = requestRepository.findById(requestId);
+    public RequestEntity updateRequest(Long userId, short status) {
+        Optional<RequestEntity> requestOpt = Optional.ofNullable(requestRepository.nativeQueryFindByUserId(userId));
         if(requestOpt.isPresent()) {
             RequestEntity request = requestOpt.get();
             if (status == 4) {
@@ -190,11 +190,11 @@ public class RequestService {
 
     /**
      * Get the status of the request.
-     * @param requestId the request ID
+     * @param
      * @return the status of the request
      */
-    public short getRequestStatus(Long requestId) {
-        Optional<RequestEntity> requestOpt = requestRepository.findById(requestId);
+    public short getRequestStatus(Long userId) {
+        Optional<RequestEntity> requestOpt = Optional.ofNullable(requestRepository.nativeQueryFindByUserId(userId));
         if(requestOpt.isPresent()) {
             return requestOpt.get().getStatus();
         } else {
