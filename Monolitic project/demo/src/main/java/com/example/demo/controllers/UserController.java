@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin("*")
@@ -43,6 +45,21 @@ public class UserController {
         try {
             UserEntity updatedUser = userService.updateUser(userId);
             return ResponseEntity.ok(updatedUser);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/getAll")
+    public List<UserEntity> getAllUsers() {
+        return userService.getAllUsers();
+    }
+
+    @GetMapping("/getUser")
+    public ResponseEntity<UserEntity> getUser(@RequestParam Long userId) {
+        try {
+            UserEntity user = userService.getUser(userId);
+            return ResponseEntity.ok(user);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }

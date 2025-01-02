@@ -21,7 +21,7 @@ public class DocumentEntity {
     private String name;
 
     @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition = "MEDIUMBLOB", nullable = false)
     private byte[] pdfData;
 
     //Foreign Keys

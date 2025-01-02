@@ -1,0 +1,26 @@
+pipeline{
+    agent any
+    stages{
+        stage("Build Frontend"){
+            steps{
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/martiny21/Lab1Tingeso']])
+                dir("prestaBanco"){
+                    bat "npm install"
+                    bat "npm run build"
+                }
+            }
+        }
+        stage("Build and Push Docker Image"){
+            steps{
+                dir("prestaBanco"){
+                    script{
+                         withDockerRegistry(credentialsId: 'id-credential'){
+                            bat "docker build --no-cache -t martiny21/prestabanco-frontend:latest ."
+                            bat "docker push martiny21/prestabanco-frontend:latest"
+                        }
+                    }                    
+                }
+            }
+        }
+    }
+}
