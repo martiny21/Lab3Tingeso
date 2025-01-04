@@ -5,7 +5,10 @@ import userServices from "../services/user.services";
 import requestServices from "../services/request.services";
 import documentServices from "../services/document.services";
 
-import { Container, Typography, Button, Box, CircularProgress, Menu, MenuItem, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import { Container, Typography, Button, Box, CircularProgress, Menu, 
+  Table, TableBody, TableCell, TableContainer, 
+  TableRow, Paper, Dialog, DialogContentText, FormControlLabel, 
+  DialogContent, DialogTitle, Checkbox, DialogActions, Select, MenuItem } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 
 const UserDetails = () => {
@@ -13,9 +16,51 @@ const UserDetails = () => {
   const [user, setUser] = useState(null);
   const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [documents, setDocuments] = useState([]);
   const navigate = useNavigate();
+
+  const [open, setOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [conditions, setConditions] = useState({
+    saldoMinimo: false,
+    historialAhorro: false,
+    depositosPeriodicos: false,
+    relacionSaldoAntiguedad: false,
+    retirosRecientes: false,
+  });
+
+  const handleChange = (event) => {
+    setConditions({
+      ...conditions,
+      [event.target.name]: event.target.checked,
+    });
+  };
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleConfirm = () => {
+    if (window.confirm("¿Está seguro?")) {
+      evaluarCapacidadDeAhorro();
+      handleClose();
+    }
+  };
+
+  const evaluarCapacidadDeAhorro = async () => {
+    
+    // Logic to evaluate saving capacity
+    const { saldoMinimo, historialAhorro, depositosPeriodicos, relacionSaldoAntiguedad, retirosRecientes } = conditions;
+    await requestServices.evaluateSavingCapacity(
+      id, saldoMinimo, historialAhorro, depositosPeriodicos, relacionSaldoAntiguedad, retirosRecientes)
+      .then(() => { navigate(`/user/${id}`); });
+    console.log("Evaluando capacidad de ahorro con las condiciones:", conditions);
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -33,7 +78,10 @@ const UserDetails = () => {
     const fetchRequest = async () => {
       try {
         const response = await requestServices.getRequestByUserId(id);
-        setRequest(response);
+        console.log(response);
+        if (response.data !== "") {
+          setRequest(response);
+        }
       } catch (error) {
         console.error("Error fetching user request:", error);
       }
@@ -63,13 +111,6 @@ const UserDetails = () => {
     });
   };
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
 
   const handleDownload = async (documentId) => {
     const response = await documentServices.download(documentId);
@@ -96,18 +137,61 @@ const UserDetails = () => {
     return statusMap[status] || "Desconocido";
   };
 
-  const getSavingCapacityColor = (savingCapacity) => {
-    switch (savingCapacity) {
-      case "Sin evaluar":
-        return "gray";
-      case "Solida":
-        return "green";
-      case "insuficiente":
-        return "red";
-      default:
-        return "black";
+  const handleStatusClickOpen = () => {
+    setStatusOpen(true);
+  };
+
+  const handleStatusClose = () => {
+    setStatusOpen(false);
+  };
+
+  const handleStatusChange = (event) => {
+    setSelectedStatus(event.target.value);
+  };
+
+  const handleStatusConfirm = async () => {
+    if (window.confirm("¿Está seguro de actualizar el estado de la solicitud?")) {
+      await requestServices.updateStatus(id, selectedStatus);
+      handleStatusClose();
     }
   };
+
+  const getSavingCapacityColor = (savingCapacity) => {
+    switch (savingCapacity) {
+        case "Sin evaluar":
+          return "gray";
+        case "Solida":
+          return "green";
+        case "insuficiente":
+          return "red";
+        default:
+          return "black";
+      }
+    };
+
+    const handleEvaluation = async () => {
+      if (window.confirm("¿Está seguro?")) {
+      await requestServices.evaluate(id)
+      .then(() => { alert("Solicitud evaluada correctamente, se recomiendo actualizar la pagina"); })
+      .catch(error => { console.error("Error evaluating request:", error); });
+      }
+    };
+
+    const renderEvaluationButton = () => {
+      if (request !== null && request.data.savingCapacityStatus !== "Sin evaluar") {
+      return (
+        <Button
+        variant="contained"
+        color="primary"
+        sx={{ mt: 2 }}
+        onClick={handleEvaluation}
+        >
+        Evaluar solicitud
+        </Button>
+      );
+      }
+    };
+  
   
 
   if (loading) {
@@ -236,34 +320,147 @@ const UserDetails = () => {
                   <TableBody>
                     <TableRow>
                       <TableCell><strong>Estado:</strong></TableCell>
-                      <TableCell>{translateStatus(request.status)}</TableCell>
+                      <TableCell>{translateStatus(request.data.status)}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell><strong>Capacidad de Ahorro:</strong></TableCell>
-                      <TableCell sx={{ color: getSavingCapacityColor(request.savingCapacityStatus) }}>
-                        {request.savingCapacityStatus}
+                      <TableCell sx={{ color: getSavingCapacityColor(request.data.savingCapacityStatus) }}>
+                        {request.data.savingCapacityStatus}
                       </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Valor prestamo:</strong></TableCell>
+                      <TableCell>{request.data.amount}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Valor final del prestamo:</strong></TableCell>
+                      <TableCell>{request.data.loanAmount}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Sueldo:</strong></TableCell>
+                      <TableCell>{user.salary}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Deudas acumuladas:</strong></TableCell>
+                      <TableCell>{request.data.debtAmount}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               </TableContainer>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ mt: 2 }}
-                onClick={handleMenuOpen}
-              >
-                Detalles capacidad de ahorro
+              <Box display="flex" flexDirection="row" gap={2} width="100%">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2 }}
+                  onClick={handleClickOpen}
+                >
+                  Evaluar Capacidad de Ahorro
+                </Button>
+                {renderEvaluationButton()}
+              </Box>
+              <Dialog open={open} onClose={handleClose}>
+                <DialogTitle>Evaluar Capacidad de Ahorro</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    Por favor, marque las siguientes condiciones:
+                  </DialogContentText>
+                  <Box display="flex" flexDirection="column">
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={conditions.saldoMinimo}
+                          onChange={handleChange}
+                          name="saldoMinimo"
+                        />
+                      }
+                      label="Saldo mínimo Requerido"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={conditions.historialAhorro}
+                          onChange={handleChange}
+                          name="historialAhorro"
+                        />
+                      }
+                      label="Historial de ahorro consistente"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={conditions.depositosPeriodicos}
+                          onChange={handleChange}
+                          name="depositosPeriodicos"
+                        />
+                      }
+                      label="Depósitos periódicos"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={conditions.relacionSaldoAntiguedad}
+                          onChange={handleChange}
+                          name="relacionSaldoAntiguedad"
+                        />
+                      }
+                      label="Relación Saldo/Años de antigüedad"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={conditions.retirosRecientes}
+                          onChange={handleChange}
+                          name="retirosRecientes"
+                        />
+                      }
+                      label="Retiros recientes"
+                    />
+                  </Box>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleClose} color="primary">
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleConfirm} color="primary">
+                    Confirmar
+                  </Button>
+                </DialogActions>
+              </Dialog>
+              <Button variant="contained" color="secondary" onClick={handleStatusClickOpen}
+              sx={{ mt: 2 }}>
+                Actualizar Estado Solicitud Manualmente
               </Button>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-              >
-                <MenuItem onClick={handleMenuClose}>Opción 1</MenuItem>
-                <MenuItem onClick={handleMenuClose}>Opción 2</MenuItem>
-                <MenuItem onClick={handleMenuClose}>Opción 3</MenuItem>
-              </Menu>
+              <Dialog open={statusOpen} onClose={handleStatusClose}>
+                <DialogTitle>Actualizar Estado de la Solicitud</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    Por favor, seleccione el nuevo estado de la solicitud:
+                  </DialogContentText>
+                  <Select
+                    value={selectedStatus}
+                    onChange={handleStatusChange}
+                    fullWidth
+                  >
+                    <MenuItem value={1}>Revisión inicial</MenuItem>
+                    <MenuItem value={2}>Faltan documentos</MenuItem>
+                    <MenuItem value={3}>Revisión</MenuItem>
+                    <MenuItem value={4}>Pre-aprobado</MenuItem>
+                    <MenuItem value={5}>Aprobación final</MenuItem>
+                    <MenuItem value={6}>Aprobado</MenuItem>
+                    <MenuItem value={7}>Rechazado</MenuItem>
+                    <MenuItem value={8}>Cancelado</MenuItem>
+                    <MenuItem value={9}>Desembolso</MenuItem>
+                  </Select>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleStatusClose} color="primary">
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleStatusConfirm} color="primary">
+                    Confirmar
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </Box>
           ) : (
             <Typography variant="body1" sx={{ mt: 4 }}>

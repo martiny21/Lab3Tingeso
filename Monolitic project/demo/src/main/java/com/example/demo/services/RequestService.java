@@ -271,7 +271,24 @@ public class RequestService {
             request.setPeriodicDeposit(periodicDeposit);
             request.setSalaryYearRelation(salaryYearRelation);
             request.setNearlyRetirements(nearlyRetirements);
+
+            short savingCapacity = CheckSavingCapacity(request);
+
+            //Check saving capacity
+            if (savingCapacity < 3) {
+                request.setStatus((short) 7);
+                request.setSavingCapacityStatus("Insuficiente");
+
+            } else if (savingCapacity >= 3 && savingCapacity < 5) {
+                request.setStatus((short) 3);
+                request.setSavingCapacityStatus("Moderada");
+
+            } else {
+                request.setSavingCapacityStatus("Solida");
+            }
             return requestRepository.save(request);
+
+
         } else {
             throw new RuntimeException("Request not found");
         }

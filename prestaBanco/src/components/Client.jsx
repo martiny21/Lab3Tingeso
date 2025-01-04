@@ -3,13 +3,37 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Container, Box, Typography, Button, TextField, Alert } from "@mui/material";
 
+
+import userServices from "../services/user.services";
+import requestServices from "../services/request.services";
+
+import { useEffect } from "react";
+
 const Client = () => {
   const [principal, setPrincipal] = useState("");
   const [rate, setRate] = useState("");
   const [years, setYears] = useState("");
   const [monthlyPayment, setMonthlyPayment] = useState(null);
   const [error, setError] = useState({});
+  const [request, setRequest] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userRut = sessionStorage.getItem("userRut");
+      try {
+        const response = await userServices.get(userRut);
+
+        const request = await requestServices.getRequestByUserId(response.data.id);
+        console.log(request);
+        setRequest(request);
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    };
+        
+    fetchUser();
+  }, []);
 
   const calculateMonthlyPayment = () => {
     let currentErrors = {};
@@ -49,6 +73,30 @@ const Client = () => {
     }
   };
 
+  const renderButton = () => {
+    if (request === null || request.data === "") {
+      return (
+        <Button 
+          variant="contained" 
+          sx={{ backgroundColor: "rgba(84, 205, 68, 0.67)" }} 
+          onClick={() => navigate(`/Request/${sessionStorage.getItem("userRut")}`)}
+        >
+          Realizar Prestamo
+        </Button>
+      );
+    } else {
+      return (
+        <Button 
+          variant="contained" 
+          sx={{ backgroundColor: "rgba(84, 205, 68, 0.67)" }} 
+          onClick={() => alert("Ya tienes un préstamo en curso")}
+        >
+          Ver Prestamo
+        </Button>
+      );
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 10 }}>
       <Box
@@ -74,9 +122,8 @@ const Client = () => {
           <Button startIcon={<ArrowBack />} variant="contained" color="secondary" onClick={goHome}>
             Volver
           </Button>
-          <Button variant="contained" sx = {{ backgroundColor: "rgba(84, 205, 68, 0.67)" }} onClick={() => navigate(`/Request/${sessionStorage.getItem("userRut")}`)}>
-            Realizar Prestamo
-          </Button>
+          {renderButton()}
+
         </Box>
       </Box>
 
