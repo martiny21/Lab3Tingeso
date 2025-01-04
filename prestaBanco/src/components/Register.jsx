@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { TextField, Button, Container, Typography, Box, FormControl } from "@mui/material";
 import { CloudUpload, CheckCircle } from "@mui/icons-material";
 import { format } from 'date-fns';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 import userService from "../services/user.services";
 import documentService from "../services/document.services";
@@ -18,6 +19,7 @@ const Register = () => {
   const [incomeFile, setIncomeFile] = useState(null);
   const [idFileMessage, setIdFileMessage] = useState("");
   const [incomeFileMessage, setIncomeFileMessage] = useState("");
+  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleFileChange = (e, fileType) => {
@@ -42,14 +44,26 @@ const Register = () => {
   const handleRegister = async () => {
     let currentErrors = {};
 
+    const today = new Date();
+    const birthDateObj = new Date(birthDate);
+    let age = today.getFullYear() - birthDateObj.getFullYear();
+    const monthDiff = today.getMonth() - birthDateObj.getMonth();
+    const dayDiff = today.getDate() - birthDateObj.getDate();
+
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      age--;
+    }
+
     if (!name) currentErrors.name = "El nombre es obligatorio.";
     if (!rut) currentErrors.rut = "El RUT es obligatorio.";
-    else if (!/^\d{8}-\d$/.test(rut)) currentErrors.rut = "Ingrese un RUT válido en el formato 12345678-9.";
-    if (!birthDate) currentErrors.birthDate = "La fecha de nacimiento es obligatoria.";
+    if (!birthDate) {
+      currentErrors.birthDate = "La fecha de nacimiento es obligatoria.";
+    } else if (birthDateObj > today) {
+      currentErrors.birthDate = "La fecha de nacimiento no puede ser en el futuro.";
+    } else if (age < 18 || age > 150) {
+      currentErrors.birthDate = "La edad debe estar entre 18 y 150 años.";
+    }
     if (!salary || salary <= 0) currentErrors.salary = "El salario debe ser mayor a 0.";
-    if (!idFile) currentErrors.idFile = "El archivo de identificación es obligatorio.";
-    if (!incomeFile) currentErrors.incomeFile = "El archivo de comprobante de ingreso es obligatorio.";
-
     if (Object.keys(currentErrors).length > 0) {
       setErrors(currentErrors);
       return;
@@ -79,12 +93,28 @@ const Register = () => {
         const uploadIncomeFile = documentService.upload("income", incomeFile, userId)
           .catch((error) => console.error("Error al subir archivo de comprobante de ingreso", error));
 
-        return Promise.all([uploadIdFile, uploadIncomeFile]);
+        return Promise.all([uploadIdFile, uploadIncomeFile]).then(() => { navigate("/"); });
       })
       .catch((error) => {
-        console.error("Error en el proceso de registro", error);
+        if (error.response && error.response.status === 400) {
+          setErrors({ rut: "El RUT ya está registrado." });
+        } else {
+          console.error("Error en el proceso de registro", error);
+        }
       });
+  };
 
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleConfirm = () => {
+    setOpen(false);
+    handleRegister();
   };
 
   const renderFileUploadButton = (file, setFile, label, message, setMessage) => {
@@ -252,7 +282,7 @@ const Register = () => {
           variant="contained"
           color="primary"
           fullWidth
-          onClick={handleRegister}
+          onClick={handleClickOpen}
           sx={{ marginTop: "1rem" }}
         >
           Registrarse
@@ -267,6 +297,25 @@ const Register = () => {
           Volver a Home
         </Button>
       </Container>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+      >
+        <DialogTitle>Confirmar Registro</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            ¿Estás seguro de que los datos que has subido son correctos?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handleConfirm} color="primary">
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

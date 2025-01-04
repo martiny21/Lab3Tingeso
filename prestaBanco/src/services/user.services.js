@@ -24,4 +24,9 @@ const getUsers = () => {
     return httpClient.get('/api/users/getAll');
 }
 
-export default{register, get, getRut, getUsers, getUser};
+//Validate an user
+const validate = (userId) => {
+    return httpClient.put(`/api/users/${userId}/validate`);
+}
+
+export default{register, get, getRut, getUsers, getUser, validate};

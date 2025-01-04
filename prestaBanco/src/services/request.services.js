@@ -1,15 +1,19 @@
-import httpClient from "../http-common.js";
+import http from "../http-common.js";
 
 const create = (data,id) =>{
-    return httpClient.post(`/api/requests/${id}/make`,data);
+    return http.post(`/api/requests/${id}/make`,data);
 }
 
 const evaluate = id => {
-    return httpClient.put(`/api/requests/${id}/evaluate`);
+    return http.put(`/api/requests/${id}/evaluate`);
 }
 
 const getAll = () => {
-    return httpClient.get('/api/requests/allRequests');
+    return http.get('/api/requests/allRequests');
 }
 
-export default {create, evaluate, getAll}
+const getRequestByUserId = id => {
+    return http.get(`/api/requests/${id}/request`);
+}
+
+export default {create, evaluate, getAll, getRequestByUserId}

@@ -47,7 +47,7 @@ public class RequestEntity {
     private double loanAmount; //Final amount
 
     //Foreign Key
-
+    @Column(unique = true)
     private Long user_id;
 
 

@@ -32,7 +32,7 @@ public class DocumentService {
             document.setPdfData(file.getBytes());
             document.setUser_id(userId); // Set the user
 
-            // Guardar el documento en la base de datos
+            // Save the document to the database
             documentRepository.save(document);
         } else {
             throw new RuntimeException("User not found");
@@ -41,5 +41,9 @@ public class DocumentService {
 
     public ArrayList<DocumentEntity> getDocumentsByUserId(long userId) {
         return documentRepository.nativeQueryFindByUserId(userId);
+    }
+
+    public DocumentEntity getDocumentById(Long documentId) {
+        return documentRepository.findById(documentId).orElseThrow(() -> new RuntimeException("Document not found"));
     }
 }

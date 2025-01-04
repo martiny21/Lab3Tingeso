@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import {Container, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button} from '@mui/material';
 import { Box, Typography } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 import userServices from "../services/user.services"; 
 
 const ExecutiveNew = () => {
-    const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
+  const Navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -34,8 +36,12 @@ const ExecutiveNew = () => {
     // Function to view user details
     const viewUserDetails = (id) => {
         window.location.href = `/user/${id}`; // Ruta para ver detalles del usuario.
-      };
-      
+    };
+    
+    // Function to go back to home
+    const goHome = () => {
+        Navigate("/");
+    };
 
     return (
         
@@ -60,7 +66,8 @@ const ExecutiveNew = () => {
                 <Typography variant="h6" sx={{ marginLeft: 2 }}>
                     PrestaBanco
                 </Typography>
-                <Button startIcon={ <ArrowBack/>} variant="contained" color="secondary" sx={{ marginRight: 5 }}>Volver
+                <Button startIcon={ <ArrowBack/>} variant="contained" color="secondary" sx={{ marginRight: 5 }}
+                onClick={goHome}>Volver
                 </Button>
             </Box>
           <h1>Lista de Usuarios</h1>

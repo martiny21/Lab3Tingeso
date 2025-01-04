@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import com.example.demo.DTO.DocumentDTO;
 import com.example.demo.entities.DocumentEntity;
 import com.example.demo.services.DocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,9 +8,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
+
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/document")
@@ -38,14 +42,19 @@ public class DocumentController {
     }
     */
 
+    // This method is used to get all documents from the database
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<DocumentEntity>> getUserDocuments(@PathVariable Long userId) {
+        return ResponseEntity.ok(documentService.getDocumentsByUserId(userId));
+    }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<ArrayList<DocumentEntity>> GetDocuments(@PathVariable long userId) {
-        ArrayList<DocumentEntity> documents = documentService.getDocumentsByUserId(userId);
-        if (documents == null || documents.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(documents);
-
+    //To download a document
+    @GetMapping("/download/{documentId}")
+    public ResponseEntity<byte[]> downloadDocument(@PathVariable Long documentId) {
+        DocumentEntity document = documentService.getDocumentById(documentId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + document.getName() + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(document.getPdfData());
     }
 }

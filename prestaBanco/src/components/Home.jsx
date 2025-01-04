@@ -42,7 +42,7 @@ const Home = () => {
   };
 
   const handleLoginAsClient = () => {
-    if (validateRut(rut)) {
+    if (true) {//validateRut(rut)) {
       console.log("Iniciar sesión como cliente con RUT:", rut);
       sessionStorage.setItem("userRut", rut);
       navigate("/Client");
@@ -79,14 +79,14 @@ const Home = () => {
         </Typography>
       </Box>
 
-      <Container maxWidth="xs" sx={{ marginTop: "64px" }}> {/* Ajusta el margen superior para el banner */}
+      <Container maxWidth="xs" sx={{ marginTop: "64px" }}> 
         <Box
           display="flex"
           flexDirection="column"
           justifyContent="center"
           alignItems="center"
           minHeight="calc(100vh - 64px)"
-          gap={2} // Manejo de espaciado entre elementos
+          gap={2} // Space between elements
         >
           <Typography variant="h4" component="h1" gutterBottom>
             Iniciar Sesión
@@ -100,18 +100,18 @@ const Home = () => {
             error={!!error}
             helperText={error}
             sx={{
-              backgroundColor: "#333", // Fondo oscuro
+              backgroundColor: "#333", // Dark background
               "& .MuiInputBase-root": {
-                color: "white", // Color del texto
+                color: "white", // Text color
               },
               "& .MuiInputLabel-root": {
-                color: "white", // Color de la etiqueta
+                color: "white", // Label color
               },
               "& .MuiInput-underline:before": {
-                borderBottomColor: "white", // Línea debajo del campo
+                borderBottomColor: "white", // Line under the field
               },
               "& .MuiInput-underline:hover:before": {
-                borderBottomColor: "lightgray", // Línea en hover
+                borderBottomColor: "lightgray", // Line on hover
               },
             }}
           />

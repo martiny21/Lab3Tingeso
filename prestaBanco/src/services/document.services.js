@@ -1,19 +1,40 @@
-import http from '../http-common';
+import httpClient from '../http-common.js';
 
-const upload = (fileName, file, userId) => {
+const upload =  async (fileName, file, userId) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('name', fileName);
     formData.append('userId', userId);
+    formData.append('name', fileName);
+    
 
-    return http.post('/api/document/upload', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
+    try {
+        await httpClient.post('/api/document/upload', formData, 
+            { headers: { 'Content-Type': 'multipart/form-data' }});
+        } catch (error) {
+            console.error('Error al subir documento', error);
+            alert('Error al subir documento');
         }
-    }).catch((error) => {
-        console.error('Error al subir archivo', error);
-        alert('Error al subir archivo');
-    });
 }
 
-export default {upload};
+const getDocuments = async (userId) => {
+    try {
+        const response = await httpClient.get(`/api/document/${userId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener documentos', error);
+        alert('Error al obtener documentos');
+    }
+}
+
+const download = async (documentId) => {
+    try {
+        const response = await httpClient.get(`/api/document/download/${documentId}`, 
+            {responseType: 'blob'});
+            return response;
+        } catch (error) {
+            console.error('Error al descargar documento', error);
+            alert('Error al descargar documento');
+        }
+};
+
+export default {upload, getDocuments, download};

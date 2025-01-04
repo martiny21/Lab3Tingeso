@@ -8,6 +8,7 @@ import Loan from './components/Loan';
 import Executive from './components/executive';
 import ExecutiveNew from './components/ExecutiveNew';
 import UserDetails from './components/UserDetails';
+import Request from './components/Request';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path='/Executive' element={<Executive/>}/>
           <Route path='/ExecutiveNew' element={<ExecutiveNew/>}/>
           <Route path='/user/:id' element={<UserDetails/>}/>
+          <Route path='/Request/:rut' element={<Request/>}/>
           
         </Routes> 
 

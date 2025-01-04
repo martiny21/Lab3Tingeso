@@ -35,6 +35,7 @@ public class RequestService {
         Optional<UserEntity> user = userRepository.findById(userId);
         if (user.isPresent()) {
             request.setUser_id(userId);
+            request.setSavingCapacityStatus("Sin evaluar");
         } else {
             throw new RuntimeException("User not found");
         }
