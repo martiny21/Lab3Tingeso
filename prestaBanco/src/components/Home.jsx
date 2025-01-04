@@ -10,8 +10,8 @@ const Home = () => {
   const handleRutChange = (e) => {
     const value = e.target.value;
 
-    // Verifica si el nuevo valor es un RUT válido hasta el momento
-    if (/^\d{0,8}-?\d?$/.test(value)) {
+    // Verifica si el nuevo valor es un RUT válido hasta el momento, incluyendo la letra k
+    if (/^\d{0,8}-?[0-9kK]?$/.test(value)) {
       setRut(value);
       setError(""); // Resetea el error al cambiar el RUT
     }
@@ -42,7 +42,7 @@ const Home = () => {
   };
 
   const handleLoginAsClient = () => {
-    if (true) {//validateRut(rut)) {
+    if (validateRut(rut)) {
       console.log("Iniciar sesión como cliente con RUT:", rut);
       sessionStorage.setItem("userRut", rut);
       navigate("/Client");
@@ -91,12 +91,17 @@ const Home = () => {
           <Typography variant="h4" component="h1" gutterBottom>
             Iniciar Sesión
           </Typography>
+          <Box margin={2} width="100%">
+          <Typography variant="caption" color="textSecondary" align="left" sx={{ color: "rgba(161, 161, 161, 0.75)" }}>
+            Rellenar este campo es solo necesario para ingresar como cliente*
+          </Typography>
           <TextField
             label="RUT"
             variant="filled"
             fullWidth
             value={rut}
             onChange={handleRutChange}
+            placeholder="12345678-9"
             error={!!error}
             helperText={error}
             sx={{
@@ -115,6 +120,7 @@ const Home = () => {
               },
             }}
           />
+          </Box>
           <Box display="flex" gap={2} width="100%">
             <Button
               variant="contained"

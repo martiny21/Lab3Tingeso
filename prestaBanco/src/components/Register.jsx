@@ -54,6 +54,9 @@ const Register = () => {
       age--;
     }
 
+    if(!idFile) currentErrors.idFile = "El archivo de identificación es obligatorio.";
+    if(!incomeFile) currentErrors.incomeFile = "El archivo de comprobante de ingreso es obligatorio.";
+
     if (!name) currentErrors.name = "El nombre es obligatorio.";
     if (!rut) currentErrors.rut = "El RUT es obligatorio.";
     if (!birthDate) {
@@ -194,6 +197,7 @@ const Register = () => {
         </FormControl>
         <TextField
           label="Nombre"
+          placeholder="Juan Pérez"
           variant="filled"
           fullWidth
           margin="normal"
@@ -219,6 +223,7 @@ const Register = () => {
         />
         <TextField
           label="RUT"
+          placeholder="12345678-9"
           variant="filled"
           fullWidth
           margin="normal"
@@ -244,6 +249,7 @@ const Register = () => {
         />
         <TextField
           label="Salario"
+          placeholder="500000"
           variant="filled"
           fullWidth
           margin="normal"

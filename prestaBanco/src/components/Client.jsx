@@ -16,6 +16,7 @@ const Client = () => {
   const [monthlyPayment, setMonthlyPayment] = useState(null);
   const [error, setError] = useState({});
   const [request, setRequest] = useState(null);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,6 +24,7 @@ const Client = () => {
       const userRut = sessionStorage.getItem("userRut");
       try {
         const response = await userServices.get(userRut);
+        setUser(response);
 
         const request = await requestServices.getRequestByUserId(response.data.id);
         console.log(request);
@@ -74,6 +76,18 @@ const Client = () => {
   };
 
   const renderButton = () => {
+    if (user === null || user.data === "") {
+      return (
+        <Button 
+          variant="contained" 
+          sx={{ backgroundColor: "rgba(84, 205, 68, 0.67)" }} 
+          onClick={() => navigate('/Register')}
+        >
+          Registrar
+        </Button>
+      )
+    }
+
     if (request === null || request.data === "") {
       return (
         <Button 
@@ -136,6 +150,7 @@ const Client = () => {
 
         <TextField
           label="Monto del Préstamo (P)"
+          placeholder="100000"
           variant="filled"
           type="number"
           value={principal}
@@ -164,6 +179,7 @@ const Client = () => {
 
         <TextField
           label="Tasa de Interés Anual (%)"
+          placeholder="3.5"
           variant="filled"
           type="number"
           value={rate}
@@ -192,6 +208,7 @@ const Client = () => {
 
         <TextField
           label="Años"
+          placeholder="5"
           variant="filled"
           type="number"
           value={years}

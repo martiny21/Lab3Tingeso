@@ -19,6 +19,28 @@ const Request = () => {
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
 
+    // type of loan
+
+    // 1: Primera Vivienda
+    const [creditHistoryFile, setCreditHistoryFile] = useState(null);
+    const [creditHistoryFileMessage, setCreditHistoryFileMessage] = useState('');
+
+    // 2: Segunda Vivienda
+    const [firstPropertyFile, setFirstPropertyFile] = useState(null);
+    const [firstPropertyFileMessage, setFirstPropertyFileMessage] = useState('');
+    // also use credit history file
+
+    // 3: Propiedad Comercial
+    const [financialStateBussinessFile, setFinancialStateBussinessFile] = useState(null);
+    const [financialStateBussinessFileMessage, setFinancialStateBussinessFileMessage] = useState('');
+    const [bussinesPlanFile, setBussinesPlanFile] = useState(null);
+    const [bussinesPlanFileMessage, setBussinesPlanFileMessage] = useState('');
+
+    // 4: Remodelación
+    const [budgetFile, setBudgetFile] = useState(null);
+    const [budgetFileMessage, setBudgetFileMessage] = useState('');
+
+
     // File certifcate of avaluo
     const [avalFile, setAvalFile] = useState(null);
     const [avalFileMessage, setAvalFileMessage] = useState('');
@@ -29,18 +51,94 @@ const Request = () => {
     const handleFileChange = (e, fileType) => {
         const file = e.target.files[0];
         if (file && file.type === "application/pdf") {
-          if (fileType === "aval") {
-            setAvalFile(file);
-            setAvalFileMessage("Archivo de certificado de avaluo cargado correctamente.");
-          }
+          switch (fileType) {
+            case "creditHistory":
+                setCreditHistoryFile(file);
+                setCreditHistoryFileMessage("Archivo cargado correctamente.");
+                break;
+            case "firstProperty":
+                setFirstPropertyFile(file);
+                setFirstPropertyFileMessage("Archivo cargado correctamente.");
+                break;
+            case "financialStateBussiness":
+                setFinancialStateBussinessFile(file);
+                setFinancialStateBussinessFileMessage("Archivo cargado correctamente.");
+                break;
+            case "bussinesPlan":
+                setBussinesPlanFile(file);
+                setBussinesPlanFileMessage("Archivo cargado correctamente.");
+                break;
+            case "budget":
+                setBudgetFile(file);
+                setBudgetFileMessage("Archivo cargado correctamente.");
+                break;
+            case "aval":
+                setAvalFile(file);
+                setAvalFileMessage("Archivo cargado correctamente.");
+                break;
+            default:
+                break;
+            }
         } else {
           const errorMessage = "Error: El archivo debe ser un PDF.";
           alert("Solo se permiten archivos PDF.");
           if (fileType === "aval") setAvalFileMessage(errorMessage);
         }
       };
-    
-      const renderFileUploadButton = (file, setFile, label, message, setMessage) => {
+
+    // Make a function to render the buttons for file upload depending on the loan type
+    const renderFileUploadButtons = () => {
+        switch (loanType) {
+            case '1':
+                return (
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="body1" gutterBottom>Subir Historial Crediticio (PDF)</Typography>
+                        {renderFileUploadButton(creditHistoryFile, setCreditHistoryFile, "Historial crediticio", creditHistoryFileMessage, setCreditHistoryFileMessage, "creditHistory")}
+                        {errors.creditHistoryFile && 
+                        <Typography color="error" variant="body2">{errors.creditHistoryFile}</Typography>}
+                    </Box>
+                );
+            case '2':
+                return (
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="body1" gutterBottom>Subir Escritura Primera Vivienda</Typography> 
+                        {renderFileUploadButton(firstPropertyFile, setFirstPropertyFile, "Escritura primera vivienda", firstPropertyFileMessage, setFirstPropertyFileMessage, "firstProperty")}
+                        {errors.firstPropertyFile &&
+                        <Typography color="error" variant="body2">{errors.firstPropertyFile}</Typography>}
+                        <Typography variant="body1" gutterBottom>Subir Historial Crediticio (PDF)</Typography>
+                        {renderFileUploadButton(creditHistoryFile, setCreditHistoryFile, "Historial crediticio", creditHistoryFileMessage, setCreditHistoryFileMessage, "creditHistory")}
+                        {errors.creditHistoryFile &&
+                        <Typography color="error" variant="body2">{errors.creditHistoryFile}</Typography>}
+                    </Box>
+                );
+            case '3':
+                return (
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="body1" gutterBottom>Subir Estado Financiero Del Negocio</Typography>
+                        {renderFileUploadButton(financialStateBussinessFile, setFinancialStateBussinessFile, "Estado financiero del negocio", financialStateBussinessFileMessage, setFinancialStateBussinessFileMessage, "financialStateBussiness")}
+                        {errors.financialStateBussinessFile &&
+                        <Typography color="error" variant="body2">{errors.financialStateBussinessFile}</Typography>}
+                        <Typography variant="body1" gutterBottom>Subir Plan de Negocio</Typography>
+                        {renderFileUploadButton(bussinesPlanFile, setBussinesPlanFile, "Plan de negocio", bussinesPlanFileMessage, setBussinesPlanFileMessage, "bussinesPlan")}
+                        {errors.bussinesPlanFile &&
+                        <Typography color="error" variant="body2">{errors.bussinesPlanFile}</Typography>}
+                    </Box>
+                );
+            case '4':
+                return (
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="body1" gutterBottom>Subir Presupuesto De La Remodelación</Typography>
+                        {renderFileUploadButton(budgetFile, setBudgetFile, "Presupuesto de la remodelación", budgetFileMessage, setBudgetFileMessage, "budget")}
+                        {errors.budgetFile &&
+                        <Typography color="error" variant="body2">{errors.budgetFile}</Typography>}
+                    </Box>
+                );
+            default:
+                return null;
+        }
+    };
+
+    const renderFileUploadButton = (file, setFile, label, message, setMessage, fileType) => {
         return (
           <Box>
             <Button
@@ -58,16 +156,17 @@ const Request = () => {
                 type="file"
                 hidden
                 accept="application/pdf"
-                onChange={(e) => handleFileChange(e, "aval")}
+                onChange={(e) => handleFileChange(e, fileType)}
               />
             </Button>
             {message && <Typography variant="body2" color={message.includes("Error") ? "error" : "success"}>{message}</Typography>}
           </Box>
         );
-      };
+    };
 
     const handleLoanTypeChange = (e) => {
         setLoanType(e.target.value);
+        console.log(e.target.value);
         setInterestRate('');
     };
 
@@ -103,6 +202,29 @@ const Request = () => {
         } else if (amount <= 0) {
             newErrors.amount = 'El monto debe ser mayor a 0';
         }
+
+        if (!creditHistoryFile && loanType === '1') {
+            newErrors.creditHistoryFile = 'Suba el historial crediticio';
+        }
+        if (!firstPropertyFile && loanType === '2') {
+            newErrors.firstPropertyFile = 'Suba la escritura de la primera vivienda';
+        }
+        if (!creditHistoryFile && loanType === '2') {
+            newErrors.creditHistoryFile = 'Suba el historial crediticio';
+        }
+        if (!financialStateBussinessFile && loanType === '3') {
+            newErrors.financialStateBussinessFile = 'Suba el estado financiero del negocio';
+        }
+        if (!bussinesPlanFile && loanType === '3') {
+            newErrors.bussinesPlanFile = 'Suba el plan de negocio';
+        }
+        if (!budgetFile && loanType === '4') {
+            newErrors.budgetFile = 'Suba el presupuesto de la remodelación';
+        }
+        if (!avalFile) {
+            newErrors.avalFile = 'Suba el certificado de avaluo';
+        }
+        
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -128,6 +250,25 @@ const Request = () => {
             console.log(requestResponse);
 
             await documentService.upload("Certificado de avaluo", avalFile, userId);
+
+            switch (loanType) {
+                case '1':
+                    await documentService.upload("Historial crediticio", creditHistoryFile, userId);
+                    break;
+                case '2':
+                    await documentService.upload("Escritura primera vivienda", firstPropertyFile, userId);
+                    await documentService.upload("Historial crediticio", creditHistoryFile, userId);
+                    break;
+                case '3':
+                    await documentService.upload("Estado financiero del negocio", financialStateBussinessFile, userId);
+                    await documentService.upload("Plan de negocio", bussinesPlanFile, userId);
+                    break;
+                case '4':
+                    await documentService.upload("Presupuesto de la remodelación", budgetFile, userId);
+                    break;
+                default:
+                    break;
+            }
 
             alert("Solicitud enviada correctamente");
             navigate("/Client");
@@ -274,7 +415,8 @@ return (
             />
 
             <TextField
-                label="Total de Deuda (CLP)"
+                label="Total de Deuda Acumulada (CLP)"
+                placeholder='100000'
                 variant="filled"
                 type="number"
                 value={debt}
@@ -285,7 +427,7 @@ return (
                 "& .MuiInputLabel-root": { color: "white" },
                 "& .MuiInput-underline:before": { borderBottomColor: "white" },
                 "& .MuiInput-underline:hover:before": { borderBottomColor: "lightgray" },
-                width: "100%", // Controla el ancho
+                width: "100%",
                 marginBottom: 2,
                 }}
                 error={!!errors.debt}
@@ -299,7 +441,7 @@ return (
                 "& .MuiInputLabel-root": { color: "white" },
                 "& .MuiInput-underline:before": { borderBottomColor: "white" },
                 "& .MuiInput-underline:hover:before": { borderBottomColor: "lightgray" },
-                width: "100%", // Controla el ancho
+                width: "100%", 
                 marginBottom: 2,
                 }}
             >
@@ -326,6 +468,7 @@ return (
 
             <TextField
                 label="Tasa de Interés (%)"
+                placeholder="3.5"
                 variant='filled'
                 type="number"
                 value={interestRate}
@@ -336,7 +479,7 @@ return (
                 "& .MuiInputLabel-root": { color: "white" },
                 "& .MuiInput-underline:before": { borderBottomColor: "white" },
                 "& .MuiInput-underline:hover:before": { borderBottomColor: "lightgray" },
-                width: "100%", // Controla el ancho
+                width: "100%",
                 marginBottom: 2,
                 }}
                 error={!!errors.interestRate}
@@ -345,6 +488,7 @@ return (
 
             <TextField
                 label="Años para Pagar"
+                placeholder="5"
                 type="number"
                 variant='filled'
                 value={years}
@@ -355,7 +499,7 @@ return (
                 "& .MuiInputLabel-root": { color: "white" },
                 "& .MuiInput-underline:before": { borderBottomColor: "white" },
                 "& .MuiInput-underline:hover:before": { borderBottomColor: "lightgray" },
-                width: "100%", // Controla el ancho
+                width: "100%", 
                 marginBottom: 2,
                 }}
                 error={!!errors.years}
@@ -363,7 +507,8 @@ return (
             />
 
             <TextField
-                label="Monto del Préstamo"
+                label="Monto del Préstamo a pedir (CLP)"
+                placeholder="100000"
                 type="number"
                 variant='filled'
                 value={amount}
@@ -374,7 +519,7 @@ return (
                 "& .MuiInputLabel-root": { color: "white" },
                 "& .MuiInput-underline:before": { borderBottomColor: "white" },
                 "& .MuiInput-underline:hover:before": { borderBottomColor: "lightgray" },
-                width: "100%", // Controla el ancho
+                width: "100%",
                 marginBottom: 2,
                 }}
                 error={!!errors.amount}
@@ -383,10 +528,12 @@ return (
 
             <Box sx={{ mt: 2 }}>
                 <Typography variant="body1" gutterBottom>Subir Certificado de Avaluo (PDF)</Typography>
-                {renderFileUploadButton(avalFile, setAvalFile, "Subir Certificado del avaluo", avalFileMessage, setAvalFileMessage)}
+                {renderFileUploadButton(avalFile, setAvalFile, "Subir Certificado del avaluo", avalFileMessage, setAvalFileMessage, "aval")}
                 {errors.avalFile && 
                 <Typography color="error" variant="body2">{errors.avalFile}</Typography>}
             </Box>
+
+            {renderFileUploadButtons()}
 
             <Button
                 type="submit"

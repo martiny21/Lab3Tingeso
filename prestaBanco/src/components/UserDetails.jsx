@@ -45,9 +45,10 @@ const UserDetails = () => {
     setOpen(false);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    console.log("Condiciones:", conditions);
     if (window.confirm("¿Está seguro?")) {
-      evaluarCapacidadDeAhorro();
+      await evaluarCapacidadDeAhorro();
       handleClose();
     }
   };
@@ -58,7 +59,8 @@ const UserDetails = () => {
     const { saldoMinimo, historialAhorro, depositosPeriodicos, relacionSaldoAntiguedad, retirosRecientes } = conditions;
     await requestServices.evaluateSavingCapacity(
       id, saldoMinimo, historialAhorro, depositosPeriodicos, relacionSaldoAntiguedad, retirosRecientes)
-      .then(() => { navigate(`/user/${id}`); });
+      .then(() => { alert("Capacidad de ahorro evaluada correctamente. Para ver los cambios recargue la pagina o presione 'F5'"); })
+      .catch(error => { console.error("Error evaluating saving capacity:", error); });
     console.log("Evaluando capacidad de ahorro con las condiciones:", conditions);
   };
 
@@ -105,7 +107,8 @@ const UserDetails = () => {
 
   const handleVerifyUser = async () => {
     await userServices.validate(id).then(() => {
-      setUser((prevUser) => ({ ...prevUser, ready: true }));
+      setUser((prevUser) => ({ ...prevUser, ready: true }))
+      alert("Usuario verificado correctamente");
     }).catch(error => {
       console.error("Error validating user:", error);
     });
@@ -151,7 +154,8 @@ const UserDetails = () => {
 
   const handleStatusConfirm = async () => {
     if (window.confirm("¿Está seguro de actualizar el estado de la solicitud?")) {
-      await requestServices.updateStatus(id, selectedStatus);
+      await requestServices.updateStatus(id, selectedStatus)
+      .then(() => { alert("Estado de la solicitud actualizado correctamente. Para ver los cambios recargue la pagina o presione 'F5'"); })
       handleStatusClose();
     }
   };
@@ -273,6 +277,16 @@ const UserDetails = () => {
               </TableBody>
             </Table>
           </TableContainer>
+          {!user.ready && (
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+              onClick={handleVerifyUser}
+            >
+              Verificar Usuario
+            </Button>
+          )}
           <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
             Documentos
           </Typography>
@@ -299,16 +313,6 @@ const UserDetails = () => {
             </Table>
           </TableContainer>
 
-          {!user.ready && (
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2 }}
-              onClick={handleVerifyUser}
-            >
-              Verificar Usuario
-            </Button>
-          )}
 
           {request ? (
             <Box sx={{ mt: 4 }}>
